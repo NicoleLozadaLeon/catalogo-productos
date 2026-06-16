@@ -1,0 +1,158 @@
+<%- include('../partials/header', { titulo: titulo }) %>
+
+<div class="form-page">
+  <div class="form-header">
+    <a href="/productos" class="back-link">← Volver al catálogo</a>
+    <h1 class="page-title"><%= titulo %></h1>
+  </div>
+
+  <form action="<%= accion %>" method="POST" enctype="multipart/form-data" class="producto-form" id="form-producto">
+    <div class="form-grid">
+
+      <!-- Nombre -->
+      <div class="form-group form-col-full">
+        <label for="nombre" class="form-label">Nombre del producto <span class="required">*</span></label>
+        <input
+          type="text"
+          id="nombre"
+          name="nombre"
+          class="form-input"
+          placeholder="Ej: Laptop Dell XPS 15"
+          value="<%= producto ? producto.nombre : '' %>"
+          required
+          maxlength="200"
+        />
+      </div>
+
+      <!-- Descripción -->
+      <div class="form-group form-col-full">
+        <label for="descripcion" class="form-label">Descripción</label>
+        <textarea
+          id="descripcion"
+          name="descripcion"
+          class="form-input form-textarea"
+          placeholder="Descripción detallada del producto..."
+          rows="4"
+        ><%= producto ? (producto.descripcion || '') : '' %></textarea>
+      </div>
+
+      <!-- Precio -->
+      <div class="form-group">
+        <label for="precio" class="form-label">Precio (USD) <span class="required">*</span></label>
+        <div class="input-prefix-wrap">
+          <span class="input-prefix">$</span>
+          <input
+            type="number"
+            id="precio"
+            name="precio"
+            class="form-input input-with-prefix"
+            placeholder="0.00"
+            value="<%= producto ? producto.precio : '' %>"
+            min="0"
+            step="0.01"
+            required
+          />
+        </div>
+      </div>
+
+      <!-- Stock -->
+      <div class="form-group">
+        <label for="stock" class="form-label">Stock <span class="required">*</span></label>
+        <input
+          type="number"
+          id="stock"
+          name="stock"
+          class="form-input"
+          placeholder="0"
+          value="<%= producto ? producto.stock : '' %>"
+          min="0"
+          required
+        />
+      </div>
+
+      <!-- Categoría -->
+      <div class="form-group form-col-full">
+        <label for="categoria" class="form-label">Categoría</label>
+        <select id="categoria" name="categoria" class="form-input form-select">
+          <option value="">— Sin categoría —</option>
+          <% const cats = ['Electrónica', 'Ropa', 'Hogar', 'Alimentos', 'Deportes', 'Libros', 'Juguetes', 'Automotriz', 'Salud', 'Otro']; %>
+          <% cats.forEach(function(c) { %>
+            <option value="<%= c %>" <%= (producto && producto.categoria === c) ? 'selected' : '' %>><%= c %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <!-- Imagen -->
+      <div class="form-group form-col-full">
+        <label for="imagen" class="form-label">Imagen del producto</label>
+        <% if (producto && producto.imagen_url) { %>
+          <div class="current-img-preview">
+            <img src="<%= producto.imagen_url %>" alt="Imagen actual" class="img-preview" id="preview-actual" />
+            <p class="img-current-label">Imagen actual (sube una nueva para reemplazarla)</p>
+          </div>
+        <% } %>
+        <div class="file-drop-zone" id="file-drop-zone">
+          <input
+            type="file"
+            id="imagen"
+            name="imagen"
+            class="file-input-hidden"
+            accept="image/jpeg,image/png,image/gif,image/webp"
+          />
+          <div class="file-drop-content" id="file-drop-content">
+            <span class="file-drop-icon">🖼️</span>
+            <p><strong>Arrastra una imagen aquí</strong> o <span class="file-link">haz clic para elegir</span></p>
+            <p class="file-hint">JPG, PNG, GIF o WebP — máximo 10 MB</p>
+          </div>
+          <img id="img-preview-new" class="img-preview-new" src="" alt="Vista previa" style="display:none" />
+        </div>
+      </div>
+
+    </div>
+
+    <div class="form-actions">
+      <a href="/productos" class="btn btn-ghost" id="btn-cancelar">Cancelar</a>
+      <button type="submit" class="btn btn-primary" id="btn-guardar">
+        <%= producto ? '💾 Guardar cambios' : '✅ Crear producto' %>
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+// Preview de imagen al seleccionar
+const fileInput    = document.getElementById('imagen');
+const dropZone     = document.getElementById('file-drop-zone');
+const dropContent  = document.getElementById('file-drop-content');
+const previewNew   = document.getElementById('img-preview-new');
+
+function showPreview(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    previewNew.src = e.target.result;
+    previewNew.style.display = 'block';
+    dropContent.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+dropZone.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', () => showPreview(fileInput.files[0]));
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    fileInput.files = dt.files;
+    showPreview(file);
+  }
+});
+</script>
+
+<%- include('../partials/footer') %>

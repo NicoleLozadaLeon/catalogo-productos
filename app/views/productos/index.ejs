@@ -1,0 +1,59 @@
+<%- include('../partials/header', { titulo: titulo }) %>
+
+<div class="page-header">
+  <div class="page-header-content">
+    <h1 class="page-title">📦 Catálogo de Productos</h1>
+    <p class="page-subtitle"><%= productos.length %> producto<%= productos.length !== 1 ? 's' : '' %> registrado<%= productos.length !== 1 ? 's' : '' %></p>
+  </div>
+  <a href="/productos/nuevo" class="btn btn-primary" id="btn-crear-producto">
+    <span>+</span> Nuevo Producto
+  </a>
+</div>
+
+<% if (productos.length === 0) { %>
+  <div class="empty-state">
+    <div class="empty-icon">🛒</div>
+    <h2>Sin productos aún</h2>
+    <p>Empieza agregando tu primer producto al catálogo.</p>
+    <a href="/productos/nuevo" class="btn btn-primary" id="btn-primer-producto">Crear primer producto</a>
+  </div>
+<% } else { %>
+  <div class="productos-grid">
+    <% productos.forEach(function(p) { %>
+      <article class="producto-card" id="producto-<%= p.id %>">
+        <div class="card-img-wrap">
+          <% if (p.imagen_url) { %>
+            <img src="<%= p.imagen_url %>" alt="<%= p.nombre %>" class="card-img" loading="lazy" />
+          <% } else { %>
+            <div class="card-img-placeholder">
+              <span>📷</span>
+            </div>
+          <% } %>
+          <% if (p.categoria) { %>
+            <span class="card-badge"><%= p.categoria %></span>
+          <% } %>
+        </div>
+        <div class="card-body">
+          <h2 class="card-title"><%= p.nombre %></h2>
+          <p class="card-desc"><%= p.descripcion || 'Sin descripción' %></p>
+          <div class="card-meta">
+            <span class="card-precio">$<%= parseFloat(p.precio).toFixed(2) %></span>
+            <span class="card-stock <%= p.stock <= 5 ? 'stock-low' : '' %>">
+              Stock: <%= p.stock %>
+            </span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="/productos/<%= p.id %>" class="btn btn-ghost btn-sm" id="ver-<%= p.id %>">Ver</a>
+          <a href="/productos/<%= p.id %>/editar" class="btn btn-secondary btn-sm" id="editar-<%= p.id %>">Editar</a>
+          <form action="/productos/<%= p.id %>?_method=DELETE" method="POST" class="form-inline"
+                onsubmit="return confirm('¿Eliminar «<%= p.nombre %>»? Esta acción no se puede deshacer.')">
+            <button type="submit" class="btn btn-danger btn-sm" id="eliminar-<%= p.id %>">Eliminar</button>
+          </form>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+<% } %>
+
+<%- include('../partials/footer') %>

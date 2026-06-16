@@ -1,0 +1,96 @@
+# ============================================================
+# Módulo Compute: EC2 t3.micro con Docker + App
+# ============================================================
+
+# Busca la AMI más reciente de Amazon Linux 2023
+data "aws_ami" "amazon_linux_2023" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["al2023-ami-*-x86_64"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
+# Script de arranque: instala Docker, clona el repo y corre la app
+locals {
+  user_data = <<-EOF
+    #!/bin/bash
+    set -e
+    exec > /var/log/user-data.log 2>&1
+
+    echo "=== [1/5] Instalando Docker y Git ==="
+    dnf update -y
+    dnf install -y docker git
+    systemctl enable docker
+    systemctl start docker
+    usermod -aG docker ec2-user
+
+    echo "=== [2/5] Instalando Docker Compose plugin ==="
+    mkdir -p /usr/local/lib/docker/cli-plugins
+    curl -fsSL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 \
+      -o /usr/local/lib/docker/cli-plugins/docker-compose
+    chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
+    echo "=== [3/5] Clonando repositorio ==="
+    git clone ${var.github_repo_url} /opt/catalogo
+    mkdir -p /opt/catalogo/app/uploads
+    chown -R ec2-user:ec2-user /opt/catalogo
+
+    echo "=== [4/5] Construyendo imagen Docker ==="
+    cd /opt/catalogo/app
+    docker build -t catalogo-app:latest .
+
+    echo "=== [5/5] Iniciando contenedor ==="
+    docker run -d \
+      --name catalogo-app \
+      --restart unless-stopped \
+      -p 3000:3000 \
+      -e NODE_ENV=production \
+      -e PORT=3000 \
+      -e DB_HOST=${var.db_host} \
+      -e DB_PORT=5432 \
+      -e DB_NAME=${var.db_name} \
+      -e DB_USER=${var.db_username} \
+      -e "DB_PASSWORD=${var.db_password}" \
+      -e USE_S3=true \
+      -e S3_BUCKET=${var.s3_bucket_name} \
+      -e AWS_REGION=${var.aws_region} \
+      -v /opt/catalogo/app/uploads:/app/uploads \
+      catalogo-app:latest
+
+    echo "=== Despliegue completado ==="
+  EOF
+}
+
+resource "aws_instance" "app" {
+  ami                    = data.aws_ami.amazon_linux_2023.id
+  instance_type          = var.ec2_instance_type
+  subnet_id              = var.subnet_id
+  vpc_security_group_ids = [var.sg_id]
+
+  # LabInstanceProfile: permite a la EC2 acceder a S3 y Parameter Store
+  iam_instance_profile   = "LabInstanceProfile"
+
+  # vockey: key pair por defecto del Learner Lab (descargable desde AWS Details → Download PEM)
+  key_name               = "vockey"
+
+  user_data              = local.user_data
+  user_data_replace_on_change = true
+
+  root_block_device {
+    volume_size = 20
+    volume_type = "gp3"
+  }
+
+  tags = {
+    Name    = "${var.project_name}-ec2-app"
+    Project = var.project_name
+  }
+}

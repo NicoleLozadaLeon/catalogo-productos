@@ -1,0 +1,28 @@
+# .dockerignore — archivos excluidos del contexto de build Docker
+# Esto reduce el tamaño del build y evita copiar secretos a la imagen.
+
+# === Credenciales y secretos (NUNCA en la imagen) ===
+.env
+.env.*
+*.env
+credentials
+*.pem
+*.key
+
+# === Node modules (se reinstalan dentro del container) ===
+node_modules/
+npm-debug.log*
+
+# === Archivos de desarrollo ===
+.git/
+.gitignore
+.dockerignore
+README.md
+*.md
+
+# === Uploads locales (no van en la imagen) ===
+uploads/
+
+# === Archivos del SO ===
+.DS_Store
+Thumbs.db

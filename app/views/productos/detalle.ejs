@@ -1,0 +1,61 @@
+<%- include('../partials/header', { titulo: titulo }) %>
+
+<div class="page-header">
+  <div class="page-header-content">
+    <a href="/productos" class="back-link">← Volver al catálogo</a>
+    <h1 class="page-title"><%= producto.nombre %></h1>
+    <% if (producto.categoria) { %>
+      <span class="badge"><%= producto.categoria %></span>
+    <% } %>
+  </div>
+  <div class="action-group">
+    <a href="/productos/<%= producto.id %>/editar" class="btn btn-secondary" id="btn-editar-detalle">Editar</a>
+    <form action="/productos/<%= producto.id %>?_method=DELETE" method="POST"
+          onsubmit="return confirm('¿Eliminar «<%= producto.nombre %>»?')">
+      <button type="submit" class="btn btn-danger" id="btn-eliminar-detalle">Eliminar</button>
+    </form>
+  </div>
+</div>
+
+<div class="detalle-layout">
+  <div class="detalle-img-col">
+    <% if (producto.imagen_url) { %>
+      <img src="<%= producto.imagen_url %>" alt="<%= producto.nombre %>" class="detalle-img" />
+    <% } else { %>
+      <div class="detalle-img-placeholder">
+        <span>📷</span>
+        <p>Sin imagen</p>
+      </div>
+    <% } %>
+  </div>
+  <div class="detalle-info-col">
+    <div class="info-card">
+      <div class="info-row">
+        <span class="info-label">Precio</span>
+        <span class="info-value precio-big">$<%= parseFloat(producto.precio).toFixed(2) %></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Stock</span>
+        <span class="info-value <%= producto.stock <= 5 ? 'stock-low' : '' %>"><%= producto.stock %> unidades</span>
+      </div>
+      <% if (producto.categoria) { %>
+      <div class="info-row">
+        <span class="info-label">Categoría</span>
+        <span class="info-value"><%= producto.categoria %></span>
+      </div>
+      <% } %>
+      <div class="info-row">
+        <span class="info-label">Registrado</span>
+        <span class="info-value"><%= new Date(producto.creado_en).toLocaleString('es-BO') %></span>
+      </div>
+    </div>
+    <% if (producto.descripcion) { %>
+    <div class="descripcion-card">
+      <h3>Descripción</h3>
+      <p><%= producto.descripcion %></p>
+    </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

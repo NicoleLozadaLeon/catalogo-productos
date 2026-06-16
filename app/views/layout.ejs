@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= titulo %> — CatálogoCloud</title>
+  <meta name="description" content="Sistema ABM de gestión de productos para el proyecto ISW-341 Computación en la Nube" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="/productos" class="navbar-brand">
+        <span class="brand-icon">📦</span>
+        <span class="brand-name">CatálogoCloud</span>
+      </a>
+      <div class="navbar-links">
+        <a href="/productos" class="nav-link">Productos</a>
+        <a href="/productos/nuevo" class="btn btn-primary btn-sm" id="btn-nuevo-nav">+ Nuevo Producto</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <%- body %>
+  </main>
+
+  <footer class="footer">
+    <p>ISW-341 Computación en la Nube · AWS Academy Learner Lab · Stack: Node.js + Express + PostgreSQL</p>
+  </footer>
+</body>
+</html>

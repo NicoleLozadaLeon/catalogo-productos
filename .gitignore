@@ -1,0 +1,36 @@
+# === REGLA DEL CERO: NUNCA credenciales en Git ===
+# Archivos .env con valores reales → ignorados
+.env
+.env.local
+.env.production
+.env.staging
+.env.development
+# .env.example NO se ignora (es solo plantilla sin credenciales)
+credentials
+*.pem
+*.key
+
+# === Terraform ===
+*.tfstate
+*.tfstate.*
+.terraform/
+terraform.tfvars
+*.auto.tfvars
+.terraform.lock.hcl
+
+# === Node.js ===
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# === Uploads locales (no subir imágenes al repo) ===
+app/uploads/
+
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# === Logs ===
+logs/
+*.log

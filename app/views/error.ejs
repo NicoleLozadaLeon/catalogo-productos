@@ -1,0 +1,16 @@
+<%- include('./partials/header', { titulo: 'Error' }) %>
+
+<div class="error-page">
+  <div class="error-icon">⚠️</div>
+  <h1 class="error-title">Algo salió mal</h1>
+  <p class="error-message"><%= mensaje %></p>
+  <% if (err && process.env.NODE_ENV !== 'production') { %>
+    <details class="error-details">
+      <summary>Detalles técnicos</summary>
+      <pre><%= err.stack || err.message || JSON.stringify(err) %></pre>
+    </details>
+  <% } %>
+  <a href="/productos" class="btn btn-primary" id="btn-volver-error">Volver al catálogo</a>
+</div>
+
+<%- include('./partials/footer') %>
