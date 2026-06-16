@@ -42,25 +42,41 @@ async function uploadImagen(fileBuffer, fileName, mimeType) {
 }
 
 /**
+ * Extrae la clave S3 relativa desde una URL completa o clave relativa.
+ * "https://bucket.s3.amazonaws.com/uploads/x.jpg" → "uploads/x.jpg"
+ * "uploads/x.jpg" → "uploads/x.jpg"
+ */
+function extractS3Key(value) {
+  if (!value) return null;
+  if (value.startsWith('https://')) {
+    const m = value.match(/\.amazonaws\.com\/(.+)$/);
+    return m ? m[1] : null;
+  }
+  return value;
+}
+
+/**
  * Devuelve la URL para mostrar una imagen.
  * - Local: devuelve la ruta tal cual (/uploads/foo.jpg).
- * - S3: devuelve la ruta del proxy interno (/image/uploads/foo.jpg),
- *   que el servidor Express sirve directamente desde S3 sin necesidad
- *   de pre-signed URLs ni paquetes adicionales.
+ * - S3: devuelve la ruta del proxy interno (/image/uploads/foo.jpg).
+ *   Acepta tanto URL completa como clave relativa en imagen_url.
  */
 function getImageUrl(key) {
   if (!key) return null;
   if (!USE_S3 || key.startsWith('/')) return key;
-  return `/image/${key}`;
+  const s3Key = extractS3Key(key);
+  return s3Key ? `/image/${s3Key}` : null;
 }
 
 /**
- * Convierte una clave de imagen original en su clave de miniatura.
+ * Convierte la imagen original en su clave de miniatura.
+ * Acepta URL completa o clave relativa.
  * "uploads/foo.jpg" → "thumbnails/foo.jpg"
  */
 function getThumbnailKey(key) {
   if (!key || key.startsWith('/')) return key;
-  return key.replace(/^uploads\//, 'thumbnails/');
+  const s3Key = extractS3Key(key);
+  return s3Key ? s3Key.replace(/^uploads\//, 'thumbnails/') : null;
 }
 
 module.exports = { uploadImagen, getImageUrl, getThumbnailKey };
