@@ -19,13 +19,18 @@
 
 <div class="detalle-layout">
   <div class="detalle-img-col">
-    <% if (producto.imagen_url) { %>
-      <img src="<%= producto.imagen_url %>" alt="<%= producto.nombre %>" class="detalle-img" />
+    <% if (producto.imagen_signed) { %>
+      <p style="font-size:0.75rem;color:#6b7280;margin-bottom:4px;">Imagen original</p>
+      <img src="<%= producto.imagen_signed %>" alt="<%= producto.nombre %>" class="detalle-img" />
     <% } else { %>
       <div class="detalle-img-placeholder">
         <span>📷</span>
         <p>Sin imagen</p>
       </div>
+    <% } %>
+    <% if (producto.thumbnail_signed && producto.thumbnail_signed !== producto.imagen_signed) { %>
+      <p style="font-size:0.75rem;color:#6b7280;margin-top:16px;margin-bottom:4px;">Miniatura generada por Lambda (200×200)</p>
+      <img src="<%= producto.thumbnail_signed %>" alt="Miniatura <%= producto.nombre %>" class="detalle-img" style="max-width:200px;" />
     <% } %>
   </div>
   <div class="detalle-info-col">

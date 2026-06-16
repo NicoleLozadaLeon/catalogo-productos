@@ -1,0 +1,9 @@
+{
+  "name": "thumbnail-generator",
+  "version": "1.0.0",
+  "description": "Genera miniaturas 200x200 de imágenes subidas a S3 — Pilar 4 ISW-341",
+  "main": "index.js",
+  "dependencies": {
+    "jimp": "0.22.12"
+  }
+}

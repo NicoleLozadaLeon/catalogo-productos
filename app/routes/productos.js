@@ -4,7 +4,7 @@ const router   = express.Router();
 const multer   = require('multer');
 const path     = require('path');
 const { pool } = require('../db');
-const { uploadImagen } = require('../s3');
+const { uploadImagen, getImageUrl, getThumbnailKey } = require('../s3');
 
 // Multer: almacenamiento en memoria (el buffer lo pasamos a s3.js)
 const upload = multer({
@@ -17,13 +17,21 @@ const upload = multer({
   },
 });
 
+// Agrega URLs firmadas a un producto (original + miniatura generada por Lambda)
+async function enrichProducto(p) {
+  p.imagen_signed    = await getImageUrl(p.imagen_url);
+  p.thumbnail_signed = await getImageUrl(getThumbnailKey(p.imagen_url));
+  return p;
+}
+
 // ── GET /productos ── listar todos ──────────────────────────────────────────
 router.get('/', async (req, res) => {
   try {
     const { rows } = await pool.query(
       'SELECT * FROM productos ORDER BY creado_en DESC'
     );
-    res.render('productos/index', { productos: rows, titulo: 'Catálogo de Productos' });
+    const productos = await Promise.all(rows.map(enrichProducto));
+    res.render('productos/index', { productos, titulo: 'Catálogo de Productos' });
   } catch (err) {
     console.error(err);
     res.status(500).render('error', { mensaje: 'Error al cargar productos', err });
@@ -64,7 +72,8 @@ router.get('/:id', async (req, res) => {
   try {
     const { rows } = await pool.query('SELECT * FROM productos WHERE id = $1', [req.params.id]);
     if (!rows.length) return res.status(404).render('error', { mensaje: 'Producto no encontrado', err: null });
-    res.render('productos/detalle', { producto: rows[0], titulo: rows[0].nombre });
+    const producto = await enrichProducto(rows[0]);
+    res.render('productos/detalle', { producto, titulo: producto.nombre });
   } catch (err) {
     console.error(err);
     res.status(500).render('error', { mensaje: 'Error al cargar producto', err });
@@ -91,11 +100,10 @@ router.get('/:id/editar', async (req, res) => {
 router.put('/:id', upload.single('imagen'), async (req, res) => {
   const { nombre, descripcion, precio, stock, categoria } = req.body;
   try {
-    // Obtener imagen actual
     const { rows } = await pool.query('SELECT imagen_url FROM productos WHERE id = $1', [req.params.id]);
     if (!rows.length) return res.status(404).render('error', { mensaje: 'Producto no encontrado', err: null });
 
-    let imagen_url = rows[0].imagen_url; // conservar imagen existente por defecto
+    let imagen_url = rows[0].imagen_url;
 
     if (req.file) {
       const ext      = path.extname(req.file.originalname);

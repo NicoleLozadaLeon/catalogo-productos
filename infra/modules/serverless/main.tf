@@ -44,16 +44,13 @@ data "aws_iam_role" "lab_role" {
   name = "LabRole"
 }
 
-# Función Lambda placeholder — el código real se añade en Fase 5
-# Por ahora usa un zip mínimo para que terraform apply no falle
-data "archive_file" "lambda_placeholder" {
+# Fase 5: empaquetar la Lambda real (lambda/index.js + node_modules con Jimp)
+# REQUISITO: correr "npm ci --omit=dev" en la carpeta lambda/ antes de terraform apply
+data "archive_file" "lambda_zip" {
   type        = "zip"
-  output_path = "${path.module}/lambda_placeholder.zip"
-
-  source {
-    content  = "exports.handler = async (event) => { console.log('Lambda placeholder - se reemplaza en Fase 5'); };"
-    filename = "index.js"
-  }
+  source_dir  = abspath("${path.root}/../lambda")
+  output_path = "${path.module}/lambda.zip"
+  excludes    = ["package-lock.json"]
 }
 
 resource "aws_lambda_function" "thumbnail" {
@@ -61,8 +58,8 @@ resource "aws_lambda_function" "thumbnail" {
   role             = data.aws_iam_role.lab_role.arn
   handler          = "index.handler"
   runtime          = "nodejs20.x"
-  filename         = data.archive_file.lambda_placeholder.output_path
-  source_code_hash = data.archive_file.lambda_placeholder.output_base64sha256
+  filename         = data.archive_file.lambda_zip.output_path
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
   timeout          = 30
   memory_size      = 256
 

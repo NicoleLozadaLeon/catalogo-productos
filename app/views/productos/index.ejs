@@ -22,8 +22,8 @@
     <% productos.forEach(function(p) { %>
       <article class="producto-card" id="producto-<%= p.id %>">
         <div class="card-img-wrap">
-          <% if (p.imagen_url) { %>
-            <img src="<%= p.imagen_url %>" alt="<%= p.nombre %>" class="card-img" loading="lazy" />
+          <% if (p.thumbnail_signed || p.imagen_signed) { %>
+            <img src="<%= p.thumbnail_signed || p.imagen_signed %>" alt="<%= p.nombre %>" class="card-img" loading="lazy" />
           <% } else { %>
             <div class="card-img-placeholder">
               <span>📷</span>
