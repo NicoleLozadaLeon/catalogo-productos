@@ -42,21 +42,16 @@ async function uploadImagen(fileBuffer, fileName, mimeType) {
 }
 
 /**
- * Genera una URL temporal (pre-signed, 1 hora) para una clave S3.
- * En modo local devuelve la ruta tal cual.
- * @param {string|null} key  Clave S3 (ej: "uploads/foo.jpg") o ruta local (/uploads/foo.jpg)
+ * Devuelve la URL para mostrar una imagen.
+ * - Local: devuelve la ruta tal cual (/uploads/foo.jpg).
+ * - S3: devuelve la ruta del proxy interno (/image/uploads/foo.jpg),
+ *   que el servidor Express sirve directamente desde S3 sin necesidad
+ *   de pre-signed URLs ni paquetes adicionales.
  */
-async function getImageUrl(key) {
+function getImageUrl(key) {
   if (!key) return null;
-  if (!USE_S3 || key.startsWith('/')) return key; // ruta local
-
-  const { GetObjectCommand } = require('@aws-sdk/client-s3');
-  const { getSignedUrl }     = require('@aws-sdk/s3-request-presigner');
-  return getSignedUrl(
-    s3Client,
-    new GetObjectCommand({ Bucket: BUCKET, Key: key }),
-    { expiresIn: 3600 }
-  );
+  if (!USE_S3 || key.startsWith('/')) return key;
+  return `/image/${key}`;
 }
 
 /**

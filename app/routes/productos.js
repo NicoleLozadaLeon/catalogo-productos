@@ -17,10 +17,10 @@ const upload = multer({
   },
 });
 
-// Agrega URLs firmadas a un producto (original + miniatura generada por Lambda)
-async function enrichProducto(p) {
-  p.imagen_signed    = await getImageUrl(p.imagen_url);
-  p.thumbnail_signed = await getImageUrl(getThumbnailKey(p.imagen_url));
+// Agrega URLs de imagen a un producto (original + miniatura generada por Lambda)
+function enrichProducto(p) {
+  p.imagen_signed    = getImageUrl(p.imagen_url);
+  p.thumbnail_signed = getImageUrl(getThumbnailKey(p.imagen_url));
   return p;
 }
 
@@ -30,7 +30,7 @@ router.get('/', async (req, res) => {
     const { rows } = await pool.query(
       'SELECT * FROM productos ORDER BY creado_en DESC'
     );
-    const productos = await Promise.all(rows.map(enrichProducto));
+    const productos = rows.map(enrichProducto);
     res.render('productos/index', { productos, titulo: 'Catálogo de Productos' });
   } catch (err) {
     console.error(err);
@@ -72,7 +72,7 @@ router.get('/:id', async (req, res) => {
   try {
     const { rows } = await pool.query('SELECT * FROM productos WHERE id = $1', [req.params.id]);
     if (!rows.length) return res.status(404).render('error', { mensaje: 'Producto no encontrado', err: null });
-    const producto = await enrichProducto(rows[0]);
+    const producto = enrichProducto(rows[0]);
     res.render('productos/detalle', { producto, titulo: producto.nombre });
   } catch (err) {
     console.error(err);

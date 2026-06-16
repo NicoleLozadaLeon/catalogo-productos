@@ -20,6 +20,27 @@ app.use(methodOverride('_method'));           // permite PUT/DELETE desde formul
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // imágenes locales
 
+// ── Proxy de imágenes S3 (/image/<key>) ───────────────────────────────────
+// Sirve imágenes directamente desde S3 sin pre-signed URLs.
+// Funciona tanto para uploads/ (original) como thumbnails/ (miniatura Lambda).
+if (process.env.USE_S3 === 'true') {
+  const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3');
+  const s3proxy = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
+
+  app.get('/image/*', async (req, res) => {
+    try {
+      const key = req.params[0];
+      const { Body, ContentType } = await s3proxy.send(
+        new GetObjectCommand({ Bucket: process.env.S3_BUCKET, Key: key })
+      );
+      res.setHeader('Content-Type', ContentType || 'image/jpeg');
+      Body.pipe(res);
+    } catch (_err) {
+      res.status(404).send('Image not found');
+    }
+  });
+}
+
 // ── Rutas ─────────────────────────────────────────────────────────────────
 app.get('/', (_req, res) => res.redirect('/productos'));
 app.use('/productos', productosRouter);
