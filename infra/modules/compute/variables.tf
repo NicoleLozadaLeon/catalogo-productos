@@ -19,6 +19,12 @@ variable "ec2_instance_type" {
   default     = "t3.micro"
 }
 
+variable "ami_id" {
+  description = "AMI fija de Amazon Linux 2023 (us-east-1). Se fija para despliegues reproducibles y evitar que una AMI nueva fuerce el reemplazo de la EC2."
+  type        = string
+  default     = "ami-03d84abcde942cf8c"
+}
+
 variable "db_host" {
   description = "Host de la RDS PostgreSQL"
   type        = string

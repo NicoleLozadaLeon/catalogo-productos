@@ -2,21 +2,27 @@
 # Módulo Compute: EC2 t3.micro con Docker + App
 # ============================================================
 
-# Busca la AMI más reciente de Amazon Linux 2023
-data "aws_ami" "amazon_linux_2023" {
-  most_recent = true
-  owners      = ["amazon"]
-
-  filter {
-    name   = "name"
-    values = ["al2023-ami-*-x86_64"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-}
+# AMI fijada en var.ami_id (ver variables.tf) para despliegues reproducibles.
+#
+# Para volver al modo dinámico (siempre la AMI más reciente de Amazon Linux 2023),
+# descomenta este data source y usa `data.aws_ami.amazon_linux_2023.id` en el
+# atributo `ami` de la instancia. Aviso: el modo dinámico fuerza el reemplazo de
+# la EC2 cada vez que AWS publica una AMI nueva.
+#
+# data "aws_ami" "amazon_linux_2023" {
+#   most_recent = true
+#   owners      = ["amazon"]
+#
+#   filter {
+#     name   = "name"
+#     values = ["al2023-ami-*-x86_64"]
+#   }
+#
+#   filter {
+#     name   = "virtualization-type"
+#     values = ["hvm"]
+#   }
+# }
 
 # Script de arranque: instala Docker, clona el repo y corre la app
 locals {
@@ -83,7 +89,7 @@ locals {
 }
 
 resource "aws_instance" "app" {
-  ami                    = data.aws_ami.amazon_linux_2023.id
+  ami                    = var.ami_id
   instance_type          = var.ec2_instance_type
   subnet_id              = var.subnet_id
   vpc_security_group_ids = [var.sg_id]
@@ -98,7 +104,9 @@ resource "aws_instance" "app" {
   user_data_replace_on_change = true
 
   root_block_device {
-    volume_size = 20
+    # La AMI de Amazon Linux 2023 trae un snapshot raíz de 30 GB; el volumen
+    # no puede ser menor que el snapshot, por eso 30 (no 20).
+    volume_size = 30
     volume_type = "gp3"
   }
 
