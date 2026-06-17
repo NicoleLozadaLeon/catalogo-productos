@@ -36,3 +36,17 @@ resource "aws_db_instance" "postgres" {
     Project = var.project_name
   }
 }
+
+# Fase 6: la contraseña vive en Parameter Store (SecureString), no en variables
+# de entorno en texto plano. La EC2 la lee en runtime con su instance profile.
+resource "aws_ssm_parameter" "db_password" {
+  name        = "/${var.project_name}/db_password"
+  description = "Contraseña de la BD PostgreSQL — Fase 6 (blindaje de secretos)"
+  type        = "SecureString"
+  value       = var.db_password
+
+  tags = {
+    Name    = "${var.project_name}-db-password"
+    Project = var.project_name
+  }
+}

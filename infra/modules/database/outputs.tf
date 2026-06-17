@@ -12,3 +12,8 @@ output "db_name" {
   description = "Nombre de la base de datos"
   value       = aws_db_instance.postgres.db_name
 }
+
+output "db_password_ssm_param" {
+  description = "Nombre del parámetro SSM (SecureString) con la contraseña de la BD"
+  value       = aws_ssm_parameter.db_password.name
+}

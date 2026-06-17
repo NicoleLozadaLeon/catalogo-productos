@@ -39,10 +39,9 @@ variable "db_username" {
   type        = string
 }
 
-variable "db_password" {
-  description = "Contraseña de la base de datos"
+variable "db_password_ssm_param" {
+  description = "Nombre del parámetro SSM (SecureString) con la contraseña de la BD. La EC2 lo lee en runtime, nunca se pasa la contraseña en texto plano."
   type        = string
-  sensitive   = true
 }
 
 variable "s3_bucket_name" {

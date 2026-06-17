@@ -25,29 +25,42 @@ locals {
     set -e
     exec > /var/log/user-data.log 2>&1
 
-    echo "=== [1/5] Instalando Docker y Git ==="
+    echo "=== [1/6] Instalando Docker, Git y AWS CLI ==="
     dnf update -y
-    dnf install -y docker git
+    dnf install -y docker git unzip
     systemctl enable docker
     systemctl start docker
     usermod -aG docker ec2-user
 
-    echo "=== [2/5] Instalando Docker Compose plugin ==="
+    curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
+    unzip -q /tmp/awscliv2.zip -d /tmp
+    /tmp/aws/install
+    rm -rf /tmp/awscliv2.zip /tmp/aws
+
+    echo "=== [2/6] Instalando Docker Compose plugin ==="
     mkdir -p /usr/local/lib/docker/cli-plugins
     curl -fsSL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 \
       -o /usr/local/lib/docker/cli-plugins/docker-compose
     chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
-    echo "=== [3/5] Clonando repositorio ==="
+    echo "=== [3/6] Clonando repositorio ==="
     git clone ${var.github_repo_url} /opt/catalogo
     mkdir -p /opt/catalogo/app/uploads
     chown -R ec2-user:ec2-user /opt/catalogo
 
-    echo "=== [4/5] Construyendo imagen Docker ==="
+    echo "=== [4/6] Construyendo imagen Docker ==="
     cd /opt/catalogo/app
     docker build -t catalogo-app:latest .
 
-    echo "=== [5/5] Iniciando contenedor ==="
+    echo "=== [5/6] Leyendo contraseña de BD desde Parameter Store ==="
+    DB_PASSWORD=$(aws ssm get-parameter \
+      --name "${var.db_password_ssm_param}" \
+      --with-decryption \
+      --query "Parameter.Value" \
+      --output text \
+      --region ${var.aws_region})
+
+    echo "=== [6/6] Iniciando contenedor ==="
     docker run -d \
       --name catalogo-app \
       --restart unless-stopped \
@@ -58,7 +71,7 @@ locals {
       -e DB_PORT=5432 \
       -e DB_NAME=${var.db_name} \
       -e DB_USER=${var.db_username} \
-      -e "DB_PASSWORD=${var.db_password}" \
+      -e "DB_PASSWORD=$DB_PASSWORD" \
       -e USE_S3=true \
       -e S3_BUCKET=${var.s3_bucket_name} \
       -e AWS_REGION=${var.aws_region} \
