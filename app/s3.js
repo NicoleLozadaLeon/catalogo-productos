@@ -1,7 +1,9 @@
 // s3.js — integración con Amazon S3
 // En desarrollo (USE_S3=false): guarda en disco, devuelve ruta local.
 // En producción (USE_S3=true): sube a S3, devuelve la clave S3 (no URL pública).
-//   Las URLs se generan como pre-signed URLs en tiempo de petición via getImageUrl().
+//   Las imágenes se sirven a través del proxy interno /image/* (ver server.js):
+//   la app lee el objeto de S3 con su LabInstanceProfile y lo retransmite, de
+//   modo que el bucket permanece privado y no se exponen URLs públicas de S3.
 require('dotenv').config();
 const path = require('path');
 const fs   = require('fs');

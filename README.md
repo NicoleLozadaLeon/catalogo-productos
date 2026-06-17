@@ -54,10 +54,10 @@ catalogo-productos/
 - [x] Fase 2 — Dockerizar (Dockerfile multi-stage)
 - [x] Fase 3 — Infraestructura con Terraform (Pilar 2)
 - [x] Fase 4 — Despliegue en EC2 + RDS
-- [ ] Fase 5 — Lambda generadora de miniaturas (Pilar 4)
-- [ ] Fase 6 — Secretos en Parameter Store
-- [ ] Fase 7 — Documentación (5 entregables)
-- [ ] Fase 8 — Costos y preparación de la defensa
+- [x] Fase 5 — Lambda generadora de miniaturas (Pilar 4)
+- [x] Fase 6 — Secretos en Parameter Store
+- [x] Fase 7 — Documentación (5 entregables)
+- [x] Fase 8 — Costos documentados (preparación de la defensa en curso)
 
 ---
 

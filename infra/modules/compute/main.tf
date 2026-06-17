@@ -89,12 +89,12 @@ resource "aws_instance" "app" {
   vpc_security_group_ids = [var.sg_id]
 
   # LabInstanceProfile: permite a la EC2 acceder a S3 y Parameter Store
-  iam_instance_profile   = "LabInstanceProfile"
+  iam_instance_profile = "LabInstanceProfile"
 
   # vockey: key pair por defecto del Learner Lab (descargable desde AWS Details → Download PEM)
-  key_name               = "vockey"
+  key_name = "vockey"
 
-  user_data              = local.user_data
+  user_data                   = local.user_data
   user_data_replace_on_change = true
 
   root_block_device {

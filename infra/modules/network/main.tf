@@ -77,12 +77,12 @@ resource "aws_security_group" "app" {
   description = "Security Group para la app y la BD del catalogo"
   vpc_id      = aws_vpc.main.id
 
-  # SSH — acceso remoto a la EC2
+  # SSH — acceso remoto a la EC2 (CIDR parametrizado; restringible vía tfvars)
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.ssh_allowed_cidr]
   }
 
   # App Express

@@ -6,7 +6,7 @@
 # Bucket S3 para uploads y thumbnails
 resource "aws_s3_bucket" "uploads" {
   bucket        = "${var.project_name}-uploads-${data.aws_caller_identity.current.account_id}"
-  force_destroy = true  # permite destruir aunque tenga objetos
+  force_destroy = true # permite destruir aunque tenga objetos
 
   tags = {
     Name    = "${var.project_name}-uploads"

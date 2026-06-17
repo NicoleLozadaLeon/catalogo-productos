@@ -34,6 +34,12 @@ variable "ec2_instance_type" {
   default     = "t3.micro"
 }
 
+variable "ssh_allowed_cidr" {
+  description = "Rango CIDR autorizado a conectarse por SSH (22). Restringir a la IP propia cuando sea posible."
+  type        = string
+  default     = "0.0.0.0/0"
+}
+
 variable "db_instance_class" {
   description = "Tipo de instancia RDS"
   type        = string

@@ -6,7 +6,10 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER:     postgres
-      POSTGRES_PASSWORD: postgres      # contraseña solo del container Docker
+      # Credencial de un contenedor local efímero (NO es un secreto de producción).
+      # Se puede sobreescribir exportando DB_PASSWORD; el default permite `docker compose up`
+      # sin configurar nada. En producción (EC2) la contraseña viene de Parameter Store.
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
       POSTGRES_DB:       catalogo
     ports:
       - "5434:5432"   # puerto 5434 en host para no chocar con el PG de Windows (5433)
@@ -35,7 +38,7 @@ services:
       DB_PORT:     5432          # puerto DENTRO de la red Docker (no el del host)
       DB_NAME:     catalogo
       DB_USER:     postgres
-      DB_PASSWORD: postgres
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}   # debe coincidir con POSTGRES_PASSWORD de arriba
       USE_S3:      "false"
     ports:
       - "3000:3000"
